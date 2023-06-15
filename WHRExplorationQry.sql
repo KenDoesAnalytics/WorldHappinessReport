@@ -32,18 +32,19 @@
 --	[Generosity Rank],
 --	[Dystopia Residual],
 --	[Dystopia Residual Rank]
---INTO WorldHappinessReport..RegionCoelesced 
+----INTO WorldHappinessReport..RegionCoelesced 
 --FROM 
 --    WorldHappinessReport..CombinedHappinessData as t1
 
 
 --TABLE: WorldHappinessReport..WHRTop10in2022AllData
+	--No longer active. Refer to [RegionCoelesced.v2]
 --Available WHR Data 2015-2022 for Countries with Top 10 Happiness Ranking in 2022.
 	--73 rows of 80 present indicate at most x7 countries have been Top 10 WHR between 2015-2021 but has not stayed there for WHR 2022.
 	--Subquery Top 10 Happiness Ranking in 2022 > All Data for Selected Countires in Order by Year > Rank.
  	--Utilizes Table WorldHappinessReport..RegionCoelesced
 --SELECT t1.*
---INTO WorldHappinessReport..WHRTop10in2022AllData
+----INTO WorldHappinessReport..WHRTop10in2022AllData
 --FROM WorldHappinessReport..RegionCoelesced AS t1
 --WHERE t1.[Country] = (
 --    SELECT TOP 1 [Country]
@@ -60,6 +61,7 @@
 
 
 --TABLE: WorldHappinessReport..Top10In2022
+	--No longer active. Refer to [RegionCoelesced.v2]
 --Top 10 Countries in WHR-2022, Frequency as Top 10 Rank, and 2015-2022 Rank Sum
 --	Utilizes WorldHappinessReport..WHRTop10in2022AllData
 --	SubQuery COUNT(*) function for Frequency/Occurance of each country WHERE Happiness Rank <= 10. 
@@ -91,7 +93,7 @@
 --	t1.[Generosity Rank], 
 --	t1.[Dystopia Residual], 
 --	t1.[Dystopia Residual Rank] 
---INTO WorldHappinessReport..Top10In2022
+----INTO WorldHappinessReport..Top10In2022
 --FROM (
 --    SELECT *
 --	FROM WorldHappinessReport..WHRTop10in2022AllData
@@ -110,9 +112,8 @@
 --ORDER BY t2.[Top10 Frequency] DESC, t2.[2015-2022 RankSum] ASC 
 
 
-
-
 ----TABLE: 2022Top10AndBrazil 
+	--No longer active. Refer to [RegionCoelesced.v2]
 ----Refer to TABLE: 2022Top10AndSelected for Comparison of Code. 
 ----Comparison to Brazil WHR 2022  
 --SELECT 
@@ -165,7 +166,9 @@
 --ORDER BY [Top10 Frequency] DESC, [2015-2022 RankSum] ASC 
 
 
+
 --TABLE(S): Top10In2022AndSelected
+	--No longer active. Refer to [RegionCoelesced.v2]
 	--Following Table is taken from [Top10In2022] Table and [RegionColesced] Table combined. An easier route could have been querying Top10-&-Selected [Country] from [RegionCoelesced] Table
 --Compare with Other Main / Interested Countries
 --Include Countries: 'Finland', 'Iceland', 'Switzerland', 'Netherlands', 'New Zealand', 'Australia', 'Germany', 'Canada', 'United States', 'United Kingdom', 'France', 'Costa Rica', 'Singapore', 'Spain', 'Italy', 'Lithuania', 'Panama', 'Brazil', 'Latvia', 'Chile', 'Mexico', 'El Salvador', 'Kuwait*', 'Japan', 'Portugal', 'Argentina', 'Greece', 'South Korea', 'Philippines', 'Thailand', 'Jamaica', 'Colombia', 'Mongolia', 'Malaysia', 'China', 'Peru', 'Vietnam', 'Russia', 'Hong Kong S.A.R. of China', 'Nepal', 'Indonesia', 'Congo', 'Iraq', 'Iran', 'Cambodia', 'Myanmar', 'Sri Lanka', 'Madagascar*', 'Chad*', 'Ethiopia', 'India'
@@ -304,8 +307,40 @@
 --	--AND t2.[Year] = 2022 --Use to include only specific Year
 --ORDER BY [Year] DESC, [Top10 Frequency] DESC, [2015-2022 RankSum] ASC
 
-SELECT *
-FROM WorldHappinessReport..Top10In2022AndSelected
+------------------------------------------------------------------------------------
+
+--TABLE RegionCoelesced.v2
+--Alternative to Top10In2022 data's; Cleaned version with more available data 
+	--Year Count (Presence in 2015-2022)
+	--Top10 Frequency (# Times in Top10)
+	--2015-2022 RankSum 
+	--[Avg Rank] = [2015-2022 RankSum] / [Year Count]
+SELECT
+    t1.*,
+    t2.[Year Count],
+    t2.[Top10 Frequency],
+    t2.[2015-2022 RankSum],
+    t2.[Avg Rank]
+--INTO WorldHappinessReport..[RegionCoelesced.v2]
+FROM
+    WorldHappinessReport..RegionCoelesced AS t1
+JOIN
+    (
+        SELECT
+            [Country],
+            COUNT(DISTINCT [Year]) AS [Year Count],
+            COUNT(CASE WHEN [Happiness Rank] <= 10 THEN 1 END) AS [Top10 Frequency],
+            SUM([Happiness Rank]) AS [2015-2022 RankSum],
+            SUM([Happiness Rank]) / COUNT(DISTINCT [Year]) AS [Avg Rank]
+        FROM
+            WorldHappinessReport..RegionCoelesced
+        GROUP BY
+            [Country]
+    ) AS t2 ON t1.[Country] = t2.[Country]
+ORDER BY [Year] DESC, [Happiness Rank] ASC
+
+----------------------------------------------------------------
+--OTHER NOTES / NO CODE
 --Download Results AS... 
 	--Tools - Options - Query results - sql server - results to grid (or text) -> Include column headers when copying or saving the results.
 	--Changed settings are applied to new, but not existing query windows.
@@ -416,5 +451,4 @@ FROM WorldHappinessReport..Top10In2022AndSelected
 --		- Data Governance: Looker includes robust data governance features, allowing you to control and manage access to data and reports.
 --		- Pricing: Looker offers custom pricing based on your specific requirements and needs.
 --*When choosing between Microsoft Power BI, Tableau, and Looker, consider factors such as your familiarity with the tools, integration with your existing systems, ease of use, data connectivity options, advanced analytics capabilities, collaboration features, available resources and support, and pricing. Evaluating these factors will help you select the tool that best aligns with your goals and requirements for creating graphs and visuals for your portfolio report.
-
 
