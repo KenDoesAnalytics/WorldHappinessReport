@@ -1,5 +1,5 @@
 --Original Data/Query Path "C:\Users\kendr\Desktop\ANALYTICS\MICROSOFT SSMS\SQL Server Management Studio\WHRWorldHappinessReportQry.sql"
-
+--06/15/2023 Exploration In-Progress 
 
 --TABLE: WorldHappinessReport..RegionCoelesced
 --Match Null Region with Corresponding country when the country is repeated:
