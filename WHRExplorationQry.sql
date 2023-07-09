@@ -1,8 +1,10 @@
 /*
+Refer to WHRWorldHappinessReportQry
+	https://github.com/KenDoesAnalytics/WorldHappinessReport/blob/main/WHRWorldHappinessReportQry.sql
+	Initial Query combining Yearly WHR Reports
 Original Data/Query Path "C:\Users\kendr\Desktop\ANALYTICS\MICROSOFT SSMS\SQL Server Management Studio\WHRWorldHappinessReportQry.sql"
 I'll agree this Query can be a bit confusing.
-But it's a start. Not looking to waste more time. 
-Refer to WHRWorldHappinessReportQry regarding original data Queried.
+But it's a start.
 */
 
 
