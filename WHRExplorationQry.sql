@@ -1,4 +1,11 @@
---Original Data/Query Path "C:\Users\kendr\Desktop\ANALYTICS\MICROSOFT SSMS\SQL Server Management Studio\WHRWorldHappinessReportQry.sql"
+/*
+Original Data/Query Path "C:\Users\kendr\Desktop\ANALYTICS\MICROSOFT SSMS\SQL Server Management Studio\WHRWorldHappinessReportQry.sql"
+I'll agree this Query can be a bit confusing.
+But it's a start. Not looking to waste more time. 
+Refer to WHRWorldHappinessReportQry regarding original data Queried.
+*/
+
+
 
 /*
 TABLE: WorldHappinessReport..RegionCoelesced
@@ -6,45 +13,45 @@ Match Null Region with Corresponding country when the country is repeated:
 	COALESCE function returns first non-null region value for each country. The subquery (SELECT TOP 1 [Region] FROM WorldHappinessReport..CombinedHappinessData AS t2 WHERE t2.[Country] = t1.[Country] AND t2.[Region] IS NOT NULL) is used to find the non-null region value for the repeated country. If a country has a non-null region, it will be used as the region value. Otherwise, the subquery will return null and the COALESCE function will return the corresponding region for the repeated country.
 	Utilizes Table WorldHappinessReport..CombinedHappinessData
 */
---SELECT
---	[Year],
---	[Country],
---    COALESCE([Region], 
---             (SELECT TOP 1 [Region] 
---              FROM WorldHappinessReport..CombinedHappinessData AS t2 
---              WHERE t2.[Country] = t1.[Country] AND t2.[Region] IS NOT NULL)
---             ) AS [Region],
---	[Happiness Rank],
---	[Happiness Score],
---	[Whisker Low],
---	[Whisker High],
---	[Standard Error],
---	[Economy (GDP per Capita)], 
---	[Economy (GDP per Capita) Rank],
---	[Family (Social Support)], 
---	[Family (Social Support) Rank],
---	[Health (Life Expectancy)], 
---	[Health (Life Expectancy) Rank],
---	[Freedom], 
---	[Freedom Rank],
---	[Trust (Government Corruption)], 
---	[Trust (Government Corruption) Rank],
---	[Generosity], 
---	[Generosity Rank],
---	[Dystopia Residual],
---	[Dystopia Residual Rank]
-----INTO WorldHappinessReport..RegionCoelesced 
---FROM 
---    WorldHappinessReport..CombinedHappinessData as t1
+SELECT
+	[Year],
+	[Country],
+    COALESCE([Region], 
+             (SELECT TOP 1 [Region] 
+              FROM WorldHappinessReport..CombinedHappinessData AS t2 
+              WHERE t2.[Country] = t1.[Country] AND t2.[Region] IS NOT NULL)
+             ) AS [Region],
+	[Happiness Rank],
+	[Happiness Score],
+	[Whisker Low],
+	[Whisker High],
+	[Standard Error],
+	[Economy (GDP per Capita)], 
+	[Economy (GDP per Capita) Rank],
+	[Family (Social Support)], 
+	[Family (Social Support) Rank],
+	[Health (Life Expectancy)], 
+	[Health (Life Expectancy) Rank],
+	[Freedom], 
+	[Freedom Rank],
+	[Trust (Government Corruption)], 
+	[Trust (Government Corruption) Rank],
+	[Generosity], 
+	[Generosity Rank],
+	[Dystopia Residual],
+	[Dystopia Residual Rank]
+--INTO WorldHappinessReport..RegionCoelesced 
+FROM 
+    WorldHappinessReport..CombinedHappinessData as t1
 
 
 
 /*
 Countries in 2022 that have * at the end have it removed as shown
 */
---UPDATE WorldHappinessReport..RegionCoelesced
---SET Country = REPLACE(Country, '*', '')
---WHERE Country LIKE '%*%';
+UPDATE WorldHappinessReport..RegionCoelesced
+SET Country = REPLACE(Country, '*', '')
+WHERE Country LIKE '%*%';
 
 
 
@@ -56,20 +63,20 @@ Available WHR Data 2015-2022 for Countries with Top 10 Happiness Ranking in 2022
 	Subquery Top 10 Happiness Ranking in 2022 > All Data for Selected Countires in Order by Year > Rank.
  	Utilizes Table WorldHappinessReport..RegionCoelesced
 */
---SELECT t1.*
-----INTO WorldHappinessReport..WHRTop10in2022AllData
---FROM WorldHappinessReport..RegionCoelesced AS t1
---WHERE t1.[Country] = (
---    SELECT TOP 1 [Country]
---    FROM (
---		SELECT TOP 10 [Country]
---		FROM WorldHappinessReport..RegionCoelesced
---		WHERE [Year] = 2022
---		ORDER BY [Happiness Rank]
---    ) AS t2
---    WHERE t2.[Country] = t1.[Country]
---)
---ORDER BY t1.[Year] DESC, t1.[Happiness Rank] ASC
+SELECT t1.*
+--INTO WorldHappinessReport..WHRTop10in2022AllData
+FROM WorldHappinessReport..RegionCoelesced AS t1
+WHERE t1.[Country] = (
+    SELECT TOP 1 [Country]
+    FROM (
+		SELECT TOP 10 [Country]
+		FROM WorldHappinessReport..RegionCoelesced
+		WHERE [Year] = 2022
+		ORDER BY [Happiness Rank]
+    ) AS t2
+    WHERE t2.[Country] = t1.[Country]
+)
+ORDER BY t1.[Year] DESC, t1.[Happiness Rank] ASC
 
 
 
@@ -83,48 +90,48 @@ Top 10 Countries in WHR-2022, Frequency as Top 10 Rank, and 2015-2022 Rank Sum
 	2022 Scores are replaced by Ranking
 	Order By Total Happiness Rank (lower is better)
 */
---SELECT 
---	t1.Year,
---	t2.Country, 
---	t1.[Region],
---	t2.[Top10 Frequency], 
---	t2.[2015-2022 RankSum],  
---	t1.[Happiness Rank],
---	t1.[Happiness Score],
---	t1.[Whisker Low], 
---	t1.[Whisker High], 
---	t1.[Standard Error], 
---	t1.[Economy (GDP per Capita)], 
---	t1.[Economy (GDP per Capita) Rank], 
---	t1.[Family (Social Support)], 
---	t1.[Family (Social Support) Rank], 
---	t1.[Health (Life Expectancy)], 
---	t1.[Health (Life Expectancy) Rank], 
---	t1.[Freedom],
---	t1.[Freedom Rank],
---	t1.[Trust (Government Corruption)], 
---	t1.[Trust (Government Corruption) Rank], 
---	t1.[Generosity], 
---	t1.[Generosity Rank], 
---	t1.[Dystopia Residual], 
---	t1.[Dystopia Residual Rank] 
-----INTO WorldHappinessReport..Top10In2022
---FROM (
---    SELECT *
---	FROM WorldHappinessReport..WHRTop10in2022AllData
---    WHERE [Year] = 2022
---) AS t1
---CROSS APPLY (
---    SELECT 
---		[Country], 
---		COUNT(CASE WHEN [Happiness Rank] <= 10 THEN 1 END) AS [Top10 Frequency],
---		SUM([Happiness Rank]) AS [2015-2022 RankSum]
---    FROM WorldHappinessReport..WHRTop10in2022AllData AS t2
---    WHERE t2.[Country] = t1.[Country]
---        AND t2.[Happiness Rank] <= 10
---    GROUP BY [Country]
---) AS t2
---ORDER BY t2.[Top10 Frequency] DESC, t2.[2015-2022 RankSum] ASC 
+SELECT 
+	t1.Year,
+	t2.Country, 
+	t1.[Region],
+	t2.[Top10 Frequency], 
+	t2.[2015-2022 RankSum],  
+	t1.[Happiness Rank],
+	t1.[Happiness Score],
+	t1.[Whisker Low], 
+	t1.[Whisker High], 
+	t1.[Standard Error], 
+	t1.[Economy (GDP per Capita)], 
+	t1.[Economy (GDP per Capita) Rank], 
+	t1.[Family (Social Support)], 
+	t1.[Family (Social Support) Rank], 
+	t1.[Health (Life Expectancy)], 
+	t1.[Health (Life Expectancy) Rank], 
+	t1.[Freedom],
+	t1.[Freedom Rank],
+	t1.[Trust (Government Corruption)], 
+	t1.[Trust (Government Corruption) Rank], 
+	t1.[Generosity], 
+	t1.[Generosity Rank], 
+	t1.[Dystopia Residual], 
+	t1.[Dystopia Residual Rank] 
+--INTO WorldHappinessReport..Top10In2022
+FROM (
+    SELECT *
+	FROM WorldHappinessReport..WHRTop10in2022AllData
+    WHERE [Year] = 2022
+) AS t1
+CROSS APPLY (
+    SELECT 
+		[Country], 
+		COUNT(CASE WHEN [Happiness Rank] <= 10 THEN 1 END) AS [Top10 Frequency],
+		SUM([Happiness Rank]) AS [2015-2022 RankSum]
+    FROM WorldHappinessReport..WHRTop10in2022AllData AS t2
+    WHERE t2.[Country] = t1.[Country]
+        AND t2.[Happiness Rank] <= 10
+    GROUP BY [Country]
+) AS t2
+ORDER BY t2.[Top10 Frequency] DESC, t2.[2015-2022 RankSum] ASC 
 
 
 
@@ -134,54 +141,54 @@ TABLE: 2022Top10AndBrazil
 Refer to TABLE: 2022Top10AndSelected for Comparison of Code. 
 Comparison to Brazil WHR 2022  
 */
---SELECT 
---	[Year],
---	[Country],
---	[Region],
---	[Top10 Frequency],
---	[2015-2022 RankSum],
---	[Happiness Rank],
---	[Whisker Low],
---	[Whisker High],
---	[Standard Error],
---	[Economy (GDP per Capita) Rank],
---	[Family (Social Support) Rank],
---	[Health (Life Expectancy) Rank],
---	[Freedom Rank],
---	[Trust (Government Corruption) Rank],
---	[Generosity Rank],
---	[Dystopia Residual Rank]
---FROM WorldHappinessReport..Top10In2022 AS t1
---UNION ALL
---SELECT t2.[Year],
---       t2.[Country],
---       CAST(t2.[Region] AS nvarchar) AS [Region],
---       t3.[Top10 Frequency],
---       t3.[2015-2022 RankSum],
---       t2.[Happiness Rank],
---       t2.[Whisker Low],
---       t2.[Whisker High],
---       t2.[Standard Error],
---       t2.[Economy (GDP per Capita) Rank],
---       t2.[Family (Social Support) Rank],
---       t2.[Health (Life Expectancy) Rank],
---       t2.[Freedom Rank],
---       t2.[Trust (Government Corruption) Rank],
---       t2.[Generosity Rank],
---       t2.[Dystopia Residual Rank]
---FROM WorldHappinessReport..RegionCoelesced AS t2
---CROSS APPLY (
---	SELECT 
---		[Country], 
---		COUNT(CASE WHEN [Happiness Rank] <= 10 THEN 1 END) AS [Top10 Frequency], 
---		SUM([Happiness Rank]) AS [2015-2022 RankSum]
---	FROM WorldHappinessReport..RegionCoelesced
---	WHERE [Country] = 'Brazil'
---	GROUP BY [Country]
---) AS t3
---WHERE t2.[Country] = 'Brazil'
---    AND t2.[Year] = 2022
---ORDER BY [Top10 Frequency] DESC, [2015-2022 RankSum] ASC 
+SELECT 
+	[Year],
+	[Country],
+	[Region],
+	[Top10 Frequency],
+	[2015-2022 RankSum],
+	[Happiness Rank],
+	[Whisker Low],
+	[Whisker High],
+	[Standard Error],
+	[Economy (GDP per Capita) Rank],
+	[Family (Social Support) Rank],
+	[Health (Life Expectancy) Rank],
+	[Freedom Rank],
+	[Trust (Government Corruption) Rank],
+	[Generosity Rank],
+	[Dystopia Residual Rank]
+FROM WorldHappinessReport..Top10In2022 AS t1
+UNION ALL
+SELECT t2.[Year],
+       t2.[Country],
+       CAST(t2.[Region] AS nvarchar) AS [Region],
+       t3.[Top10 Frequency],
+       t3.[2015-2022 RankSum],
+       t2.[Happiness Rank],
+       t2.[Whisker Low],
+       t2.[Whisker High],
+       t2.[Standard Error],
+       t2.[Economy (GDP per Capita) Rank],
+       t2.[Family (Social Support) Rank],
+       t2.[Health (Life Expectancy) Rank],
+       t2.[Freedom Rank],
+       t2.[Trust (Government Corruption) Rank],
+       t2.[Generosity Rank],
+       t2.[Dystopia Residual Rank]
+FROM WorldHappinessReport..RegionCoelesced AS t2
+CROSS APPLY (
+	SELECT 
+		[Country], 
+		COUNT(CASE WHEN [Happiness Rank] <= 10 THEN 1 END) AS [Top10 Frequency], 
+		SUM([Happiness Rank]) AS [2015-2022 RankSum]
+	FROM WorldHappinessReport..RegionCoelesced
+	WHERE [Country] = 'Brazil'
+	GROUP BY [Country]
+) AS t3
+WHERE t2.[Country] = 'Brazil'
+    AND t2.[Year] = 2022
+ORDER BY [Top10 Frequency] DESC, [2015-2022 RankSum] ASC 
 
 
 /*
@@ -197,134 +204,134 @@ Function: JOIN Alternative to IN of WHERE function
 	Too long time to ask this of ChatGPT. Multiple other requests were made that was not successful. 
 Alternate Table Data may include All Years instead of 2022. Then Organize based on [Year] as needed.
 */
---SELECT* --Since SELECT DISTINCT doesn't work, this allows 'ROW_NUMBER' in combination with a subquery to remove duplicates
-----INTO WorldHappinessReport..Top10In2022AndSelected
---FROM (	
---	SELECT --finalquery with ROW_NUMBER to remove duplicate rows
---		[Year],
---		[Country],
---		[Region],
---		[Top10 Frequency],
---		[2015-2022 RankSum],
---		[Happiness Rank],
---		[Whisker Low],
---		[Whisker High],
---		[Standard Error],
---		[Economy (GDP per Capita) Rank],
---		[Family (Social Support) Rank],
---		[Health (Life Expectancy) Rank],
---		[Freedom Rank],
---		[Trust (Government Corruption) Rank],
---		[Generosity Rank],
---		[Dystopia Residual Rank],
---		ROW_NUMBER() OVER (PARTITION BY [Country], [Year] ORDER BY [Year] DESC) AS DistinctRowNum
---	FROM (
---		SELECT --subquery Main Table, which contains duplicate rows (ex Finland 2022 from both tables) 
---			[Year],
---			[Country],
---			[Region],
---			[Top10 Frequency],
---			[2015-2022 RankSum],
---			[Happiness Rank],
---			[Whisker Low],
---			[Whisker High],
---			[Standard Error],
---			[Economy (GDP per Capita) Rank],
---			[Family (Social Support) Rank],
---			[Health (Life Expectancy) Rank],
---			[Freedom Rank],
---			[Trust (Government Corruption) Rank],
---			[Generosity Rank],
---			[Dystopia Residual Rank]
---		--INTO WorldHappinessReport..[Top10In2022AndSelected]
---		FROM WorldHappinessReport..Top10In2022 AS t1
---		UNION ALL
---		SELECT 
---			   t2.[Year],
---			   t2.[Country],
---			   CAST(t2.[Region] AS nvarchar) AS [Region],
---			   t3.[Top10 Frequency],
---			   t3.[2015-2022 RankSum],
---			   t2.[Happiness Rank],
---			   t2.[Whisker Low],
---			   t2.[Whisker High],
---			   t2.[Standard Error],
---			   t2.[Economy (GDP per Capita) Rank],
---			   t2.[Family (Social Support) Rank],
---			   t2.[Health (Life Expectancy) Rank],
---			   t2.[Freedom Rank],
---			   t2.[Trust (Government Corruption) Rank],
---			   t2.[Generosity Rank],
---			   t2.[Dystopia Residual Rank]
---		FROM WorldHappinessReport..RegionCoelesced AS t2
---		CROSS APPLY (
---			SELECT 
---				[Country], 
---				COUNT(CASE WHEN [Happiness Rank] <= 10 THEN 1 END) AS [Top10 Frequency], 
---				SUM([Happiness Rank]) AS [2015-2022 RankSum]
---			FROM WorldHappinessReport..RegionCoelesced
---			WHERE [Country] = t2.[Country] -- Join condition to filter by country (instead of IN condition)
---			GROUP BY [Country]
---		) AS t3
---		INNER JOIN (
---			SELECT 'Finland' AS [Country] UNION ALL
---			SELECT 'Iceland' UNION ALL
---			SELECT 'Switzerland' UNION ALL
---			SELECT 'Netherlands' UNION ALL
---			SELECT 'New Zealand' UNION ALL
---			SELECT 'Australia' UNION ALL
---			SELECT 'Germany' UNION ALL
---			SELECT 'Canada' UNION ALL
---			SELECT 'United States' UNION ALL
---			SELECT 'United Kingdom' UNION ALL
---			SELECT 'France' UNION ALL
---			SELECT 'Costa Rica' UNION ALL
---			SELECT 'Singapore' UNION ALL
---			SELECT 'Spain' UNION ALL
---			SELECT 'Italy' UNION ALL
---			SELECT 'Lithuania' UNION ALL
---			SELECT 'Panama' UNION ALL
---			SELECT 'Brazil' UNION ALL
---			SELECT 'Latvia' UNION ALL
---			SELECT 'Chile' UNION ALL
---			SELECT 'Mexico' UNION ALL
---			SELECT 'El Salvador' UNION ALL
---			SELECT 'Kuwait*' UNION ALL
---			SELECT 'Japan' UNION ALL
---			SELECT 'Portugal' UNION ALL
---			SELECT 'Argentina' UNION ALL
---			SELECT 'Greece' UNION ALL
---			SELECT 'South Korea' UNION ALL
---			SELECT 'Philippines' UNION ALL
---			SELECT 'Thailand' UNION ALL
---			SELECT 'Jamaica' UNION ALL
---			SELECT 'Colombia' UNION ALL
---			SELECT 'Mongolia' UNION ALL
---			SELECT 'Malaysia' UNION ALL
---			SELECT 'China' UNION ALL
---			SELECT 'Peru' UNION ALL
---			SELECT 'Vietnam' UNION ALL
---			SELECT 'Russia' UNION ALL
---			SELECT 'Hong Kong S.A.R. of China' UNION ALL
---			SELECT 'Nepal' UNION ALL
---			SELECT 'Indonesia' UNION ALL
---			SELECT 'Congo' UNION ALL
---			SELECT 'Iraq' UNION ALL
---			SELECT 'Iran' UNION ALL
---			SELECT 'Cambodia' UNION ALL
---			SELECT 'Myanmar' UNION ALL
---			SELECT 'Sri Lanka' UNION ALL
---			SELECT 'Madagascar*' UNION ALL
---			SELECT 'Chad*' UNION ALL
---			SELECT 'Ethiopia' UNION ALL
---			SELECT 'India'
---		) AS countries ON t2.[Country] = countries.[Country]
---	) AS subquery
---) AS finalquery
---WHERE 
---	DistinctRowNum = 1
---	--AND t2.[Year] = 2022 --Use to include only specific Year
---ORDER BY [Year] DESC, [Top10 Frequency] DESC, [2015-2022 RankSum] ASC
+SELECT* --Since SELECT DISTINCT doesn't work, this allows 'ROW_NUMBER' in combination with a subquery to remove duplicates
+--INTO WorldHappinessReport..Top10In2022AndSelected
+FROM (	
+	SELECT --finalquery with ROW_NUMBER to remove duplicate rows
+		[Year],
+		[Country],
+		[Region],
+		[Top10 Frequency],
+		[2015-2022 RankSum],
+		[Happiness Rank],
+		[Whisker Low],
+		[Whisker High],
+		[Standard Error],
+		[Economy (GDP per Capita) Rank],
+		[Family (Social Support) Rank],
+		[Health (Life Expectancy) Rank],
+		[Freedom Rank],
+		[Trust (Government Corruption) Rank],
+		[Generosity Rank],
+		[Dystopia Residual Rank],
+		ROW_NUMBER() OVER (PARTITION BY [Country], [Year] ORDER BY [Year] DESC) AS DistinctRowNum
+	FROM (
+		SELECT --subquery Main Table, which contains duplicate rows (ex Finland 2022 from both tables) 
+			[Year],
+			[Country],
+			[Region],
+			[Top10 Frequency],
+			[2015-2022 RankSum],
+			[Happiness Rank],
+			[Whisker Low],
+			[Whisker High],
+			[Standard Error],
+			[Economy (GDP per Capita) Rank],
+			[Family (Social Support) Rank],
+			[Health (Life Expectancy) Rank],
+			[Freedom Rank],
+			[Trust (Government Corruption) Rank],
+			[Generosity Rank],
+			[Dystopia Residual Rank]
+		--INTO WorldHappinessReport..[Top10In2022AndSelected]
+		FROM WorldHappinessReport..Top10In2022 AS t1
+		UNION ALL
+		SELECT 
+			   t2.[Year],
+			   t2.[Country],
+			   CAST(t2.[Region] AS nvarchar) AS [Region],
+			   t3.[Top10 Frequency],
+			   t3.[2015-2022 RankSum],
+			   t2.[Happiness Rank],
+			   t2.[Whisker Low],
+			   t2.[Whisker High],
+			   t2.[Standard Error],
+			   t2.[Economy (GDP per Capita) Rank],
+			   t2.[Family (Social Support) Rank],
+			   t2.[Health (Life Expectancy) Rank],
+			   t2.[Freedom Rank],
+			   t2.[Trust (Government Corruption) Rank],
+			   t2.[Generosity Rank],
+			   t2.[Dystopia Residual Rank]
+		FROM WorldHappinessReport..RegionCoelesced AS t2
+		CROSS APPLY (
+			SELECT 
+				[Country], 
+				COUNT(CASE WHEN [Happiness Rank] <= 10 THEN 1 END) AS [Top10 Frequency], 
+				SUM([Happiness Rank]) AS [2015-2022 RankSum]
+			FROM WorldHappinessReport..RegionCoelesced
+			WHERE [Country] = t2.[Country] -- Join condition to filter by country (instead of IN condition)
+			GROUP BY [Country]
+		) AS t3
+		INNER JOIN (
+			SELECT 'Finland' AS [Country] UNION ALL
+			SELECT 'Iceland' UNION ALL
+			SELECT 'Switzerland' UNION ALL
+			SELECT 'Netherlands' UNION ALL
+			SELECT 'New Zealand' UNION ALL
+			SELECT 'Australia' UNION ALL
+			SELECT 'Germany' UNION ALL
+			SELECT 'Canada' UNION ALL
+			SELECT 'United States' UNION ALL
+			SELECT 'United Kingdom' UNION ALL
+			SELECT 'France' UNION ALL
+			SELECT 'Costa Rica' UNION ALL
+			SELECT 'Singapore' UNION ALL
+			SELECT 'Spain' UNION ALL
+			SELECT 'Italy' UNION ALL
+			SELECT 'Lithuania' UNION ALL
+			SELECT 'Panama' UNION ALL
+			SELECT 'Brazil' UNION ALL
+			SELECT 'Latvia' UNION ALL
+			SELECT 'Chile' UNION ALL
+			SELECT 'Mexico' UNION ALL
+			SELECT 'El Salvador' UNION ALL
+			SELECT 'Kuwait*' UNION ALL
+			SELECT 'Japan' UNION ALL
+			SELECT 'Portugal' UNION ALL
+			SELECT 'Argentina' UNION ALL
+			SELECT 'Greece' UNION ALL
+			SELECT 'South Korea' UNION ALL
+			SELECT 'Philippines' UNION ALL
+			SELECT 'Thailand' UNION ALL
+			SELECT 'Jamaica' UNION ALL
+			SELECT 'Colombia' UNION ALL
+			SELECT 'Mongolia' UNION ALL
+			SELECT 'Malaysia' UNION ALL
+			SELECT 'China' UNION ALL
+			SELECT 'Peru' UNION ALL
+			SELECT 'Vietnam' UNION ALL
+			SELECT 'Russia' UNION ALL
+			SELECT 'Hong Kong S.A.R. of China' UNION ALL
+			SELECT 'Nepal' UNION ALL
+			SELECT 'Indonesia' UNION ALL
+			SELECT 'Congo' UNION ALL
+			SELECT 'Iraq' UNION ALL
+			SELECT 'Iran' UNION ALL
+			SELECT 'Cambodia' UNION ALL
+			SELECT 'Myanmar' UNION ALL
+			SELECT 'Sri Lanka' UNION ALL
+			SELECT 'Madagascar*' UNION ALL
+			SELECT 'Chad*' UNION ALL
+			SELECT 'Ethiopia' UNION ALL
+			SELECT 'India'
+		) AS countries ON t2.[Country] = countries.[Country]
+	) AS subquery
+) AS finalquery
+WHERE 
+	DistinctRowNum = 1
+	--AND t2.[Year] = 2022 --Use to include only specific Year
+ORDER BY [Year] DESC, [Top10 Frequency] DESC, [2015-2022 RankSum] ASC
 
 ------------------------------------------------------------------------------------
 
@@ -336,29 +343,29 @@ Alternative to Top10In2022 data's; Cleaned version with more available data
 	2015-2022 RankSum 
 	[Avg Rank] = [2015-2022 RankSum] / [Year Count]
 */
---SELECT
---    t1.*,
---    t2.[Year Count],
---    t2.[Top10 Frequency],
---    t2.[2015-2022 RankSum],
---    t2.[Avg Rank]
---INTO WorldHappinessReport..[RegionCoelesced2]
---FROM
---    WorldHappinessReport..RegionCoelesced AS t1
---JOIN
---    (
---        SELECT
---            [Country],
---            COUNT(DISTINCT [Year]) AS [Year Count],
---            COUNT(CASE WHEN [Happiness Rank] <= 10 THEN 1 END) AS [Top10 Frequency],
---            SUM([Happiness Rank]) AS [2015-2022 RankSum],
---            SUM([Happiness Rank]) / COUNT(DISTINCT [Year]) AS [Avg Rank]
---        FROM
---            WorldHappinessReport..RegionCoelesced
---        GROUP BY
---            [Country]
---    ) AS t2 ON t1.[Country] = t2.[Country]
---ORDER BY [Year] DESC, [Happiness Rank] ASC
+SELECT
+    t1.*,
+    t2.[Year Count],
+    t2.[Top10 Frequency],
+    t2.[2015-2022 RankSum],
+    t2.[Avg Rank]
+INTO WorldHappinessReport..[RegionCoelesced2]
+FROM
+    WorldHappinessReport..RegionCoelesced AS t1
+JOIN
+    (
+        SELECT
+            [Country],
+            COUNT(DISTINCT [Year]) AS [Year Count],
+            COUNT(CASE WHEN [Happiness Rank] <= 10 THEN 1 END) AS [Top10 Frequency],
+            SUM([Happiness Rank]) AS [2015-2022 RankSum],
+            SUM([Happiness Rank]) / COUNT(DISTINCT [Year]) AS [Avg Rank]
+        FROM
+            WorldHappinessReport..RegionCoelesced
+        GROUP BY
+            [Country]
+    ) AS t2 ON t1.[Country] = t2.[Country]
+ORDER BY [Year] DESC, [Happiness Rank] ASC
 
 
 /*
@@ -368,42 +375,43 @@ Plan to Compare Avg Rank to 2022 Rank &/ All Other Ranks
 	2. Add Column Year 2022 Rank next to Avg Rank 
 ALTER TABLE added additional [Year Rank] Columns 
 */
---ALTER TABLE WorldHappinessReport..RegionCoelesced2
---ADD [2015 Rank] INT,
---    [2016 Rank] INT,
---    [2017 Rank] INT,
---	[2018 Rank] INT,
---	[2019 Rank] INT,
---	[2020 Rank] INT,
---	[2021 Rank] INT,
---	[2022 Rank] INT;
+ALTER TABLE WorldHappinessReport..RegionCoelesced2
+ADD [2015 Rank] INT,
+    [2016 Rank] INT,
+    [2017 Rank] INT,
+	[2018 Rank] INT,
+	[2019 Rank] INT,
+	[2020 Rank] INT,
+	[2021 Rank] INT,
+	[2022 Rank] INT;
 
 /* 
 UPDATE & LEFTJOIN for [Happiness Rank] 
 */
---UPDATE t
---SET
---    [2015 Rank] = r2015.[Happiness Rank],
---    [2016 Rank] = r2016.[Happiness Rank],
---    [2017 Rank] = r2017.[Happiness Rank],
---    [2018 Rank] = r2018.[Happiness Rank],
---    [2019 Rank] = r2019.[Happiness Rank],
---    [2020 Rank] = r2020.[Happiness Rank],
---    [2021 Rank] = r2021.[Happiness Rank],
---    [2022 Rank] = r2022.[Happiness Rank]
---FROM WorldHappinessReport..RegionCoelesced2 t
---LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2015 ON t.[Country] = r2015.[Country] AND r2015.[Year] = 2015
---LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2016 ON t.[Country] = r2016.[Country] AND r2016.[Year] = 2016
---LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2017 ON t.[Country] = r2017.[Country] AND r2017.[Year] = 2017
---LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2018 ON t.[Country] = r2018.[Country] AND r2018.[Year] = 2018
---LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2019 ON t.[Country] = r2019.[Country] AND r2019.[Year] = 2019
---LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2020 ON t.[Country] = r2020.[Country] AND r2020.[Year] = 2020
---LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2021 ON t.[Country] = r2021.[Country] AND r2021.[Year] = 2021
---LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2022 ON t.[Country] = r2022.[Country] AND r2022.[Year] = 2022;
+UPDATE t
+SET
+    [2015 Rank] = r2015.[Happiness Rank],
+    [2016 Rank] = r2016.[Happiness Rank],
+    [2017 Rank] = r2017.[Happiness Rank],
+    [2018 Rank] = r2018.[Happiness Rank],
+    [2019 Rank] = r2019.[Happiness Rank],
+    [2020 Rank] = r2020.[Happiness Rank],
+    [2021 Rank] = r2021.[Happiness Rank],
+    [2022 Rank] = r2022.[Happiness Rank]
+FROM WorldHappinessReport..RegionCoelesced2 t
+LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2015 ON t.[Country] = r2015.[Country] AND r2015.[Year] = 2015
+LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2016 ON t.[Country] = r2016.[Country] AND r2016.[Year] = 2016
+LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2017 ON t.[Country] = r2017.[Country] AND r2017.[Year] = 2017
+LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2018 ON t.[Country] = r2018.[Country] AND r2018.[Year] = 2018
+LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2019 ON t.[Country] = r2019.[Country] AND r2019.[Year] = 2019
+LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2020 ON t.[Country] = r2020.[Country] AND r2020.[Year] = 2020
+LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2021 ON t.[Country] = r2021.[Country] AND r2021.[Year] = 2021
+LEFT JOIN WorldHappinessReport..RegionCoelesced2 r2022 ON t.[Country] = r2022.[Country] AND r2022.[Year] = 2022;
 
 ----------------------------------------------------------------
 
 /*
+Personal Notes.
 Download Results AS... 
 	Tools - Options - Query results - sql server - results to grid (or text) -> Include column headers when copying or saving the results.
 	Changed settings are applied to new, but not existing query windows.
@@ -544,39 +552,39 @@ Standard Deviation Score (StdDevScore) quantifies dispersion or variability of s
 	StdDevScore is associated, but not directly correlated with range (max to min). Extreme values or outliers may increase StdDevScore
 	It is important to remember StdDevScores are taken from Scores of different WHR, which in itself are measured differently year or over year
 */
-----Create View RangeAndStandardDeviation AS
-----DROP TABLE if exists #StdDevScore
---SELECT *
-----INTO #StdDevScore
---FROM (
---	SELECT
---		'All Countries' AS Country,
---		MIN([Happiness Score]) AS MinScore, 
---		MAX([Happiness Score]) AS MaxScore,
---		MAX([Happiness Score]) - MIN ([Happiness Score]) AS Range,
---		SQRT(SUM([Happiness Score]*[Happiness Score])/COUNT(*) - AVG([Happiness Score])*AVG([Happiness Score])) AS StdDevScore,
---		--AVG ([Standard Error]) AS AvgStdError,
---		COUNT(*) AS [Count],
---		NULL AS [Avg Rank]
---	FROM
---		WorldHappinessReport..[RegionCoelesced2]
---	UNION ALL
---	SELECT
---		[Country], 
---		MIN([Happiness Score]) AS MinScore, 
---		MAX([Happiness Score]) AS MaxScore,
---		MAX([Happiness Score]) - MIN ([Happiness Score]) AS Range,
---		SQRT(SUM([Happiness Score]*[Happiness Score])/COUNT(*) - AVG([Happiness Score])*AVG([Happiness Score])) AS StdDevScore,
---		--AVG ([Standard Error]) AS AvgStdError,
---		COUNT(*) AS [Count],
---		[Avg Rank]
---	FROM
---		WorldHappinessReport..[RegionCoelesced2]
---	GROUP BY 
---		[Country],
---		[Avg Rank]
---	) AS subquery
-----ORDER BY [Avg Rank] ASC
+--Create View RangeAndStandardDeviation AS
+--DROP TABLE if exists #StdDevScore
+SELECT *
+--INTO #StdDevScore
+FROM (
+	SELECT
+		'All Countries' AS Country,
+		MIN([Happiness Score]) AS MinScore, 
+		MAX([Happiness Score]) AS MaxScore,
+		MAX([Happiness Score]) - MIN ([Happiness Score]) AS Range,
+		SQRT(SUM([Happiness Score]*[Happiness Score])/COUNT(*) - AVG([Happiness Score])*AVG([Happiness Score])) AS StdDevScore,
+		--AVG ([Standard Error]) AS AvgStdError,
+		COUNT(*) AS [Count],
+		NULL AS [Avg Rank]
+	FROM
+		WorldHappinessReport..[RegionCoelesced2]
+	UNION ALL
+	SELECT
+		[Country], 
+		MIN([Happiness Score]) AS MinScore, 
+		MAX([Happiness Score]) AS MaxScore,
+		MAX([Happiness Score]) - MIN ([Happiness Score]) AS Range,
+		SQRT(SUM([Happiness Score]*[Happiness Score])/COUNT(*) - AVG([Happiness Score])*AVG([Happiness Score])) AS StdDevScore,
+		--AVG ([Standard Error]) AS AvgStdError,
+		COUNT(*) AS [Count],
+		[Avg Rank]
+	FROM
+		WorldHappinessReport..[RegionCoelesced2]
+	GROUP BY 
+		[Country],
+		[Avg Rank]
+	) AS subquery
+--ORDER BY [Avg Rank] ASC
 
 
 
@@ -586,18 +594,17 @@ DISTINCT Country At MaxYear w/ Happiness Ranks.
 	Shows Data for Most Recent Year. Not useful for comparing 
 	Shows Happiness Rank for all Years
 */
---SELECT t.*
-----INTO WorldHappinessReport..HappinessRankings
---FROM (
---    SELECT Country, MAX(Year) AS MaxYear
---    FROM WorldHappinessReport..RegionCoelesced2
---    GROUP BY Country
---) AS s
---INNER JOIN WorldHappinessReport..RegionCoelesced2 AS t ON t.Country = s.Country AND t.Year = s.MaxYear;
+SELECT t.*
+--INTO WorldHappinessReport..HappinessRankings
+FROM (
+    SELECT Country, MAX(Year) AS MaxYear
+    FROM WorldHappinessReport..RegionCoelesced2
+    GROUP BY Country
+) AS s
+INNER JOIN WorldHappinessReport..RegionCoelesced2 AS t ON t.Country = s.Country AND t.Year = s.MaxYear;
 
 
---SELECT *
---FROM WorldHappinessReport..RegionCoelesced2
+
 
 /*
 TO ANALYZE 
